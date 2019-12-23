@@ -1,10 +1,54 @@
-import React from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { View, Text } from 'react-native';
+import api from '../../services/api';
 
-export default function User() {
-    return <Text>Usuários</Text>;
-}
+import { 
+    Container, 
+    Header, 
+    Avatar, 
+    Name, 
+    Bio 
+} from './styles';
 
-User.navigationOptions = {
-    title: 'Usuários'
+export default class User extends Component{
+    static navigationOptions = ({ navigation }) => ({
+        title: navigation.getParam('user').name,
+    });
+
+    static propTypes = {
+        navigation: PropTypes.shape({
+            getParam: PropTypes.func,
+        }).isRequired
+    }
+
+    state = {
+        stars: []
+    }
+
+    async componentDidMount() {
+        const { navigation } = this.props;
+        const user = navigation.getParam('user');
+
+        const response = await api.get(`/users/${user.login}/starred`);
+        console.log(response.data);
+
+        this.setState({ stars: response.data });
+    }
+
+    render() {
+        const { navigation } = this.props;
+        const { stars } = this.state;
+        const user = navigation.getParam('user');
+
+        return (
+            <Container>
+                <Header>
+                    <Avatar source={{ uri: user.avatar }} />
+                    <Name>{user.name}</Name>
+                    <Bio>{user.bio}</Bio>
+                </Header>
+            </Container>
+        );
+    }
 }
